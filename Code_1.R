@@ -12,6 +12,7 @@ train_file = "/Users/raki/Data Science/Haker Earth/Loan Default/Data/train_indes
 test_file = "/Users/raki/Data Science/Haker Earth/Loan Default/Data/test_indessa.csv"
 train_dataset <- read.csv(train_file, header = T)
 test_dataset <- read.csv(test_file, header = T, nrows = 1000)
+str(train_dataset)
 dim(train_dataset)
 dim(test_dataset)
 View(head(train_dataset))
@@ -19,7 +20,7 @@ unique(train_dataset$emp_length)
 View(train_dataset[train_dataset$emp_length=="n/a",])
 unique(train_dataset$home_ownership)
 
-unique(train$initial_list_status)
+unique(train_dataset$initial_list_status)
 # Data cleaning 
 # Write a funciton to replace a string with another string
 replace <- function(column, replace_with, replace_what){
@@ -78,12 +79,39 @@ dataclean<- function(dataset){
   dataset[,col_nbr_home_ownership] = replace(column = dataset[,col_nbr_ver_status], replace_what = "MORTGAGE", replace_with = "4")
   dataset[,col_nbr_home_ownership] = replace(column = dataset[,col_nbr_ver_status], replace_what = "RENT", replace_with = "5")
   
+  #cleaning initial_list_status
+  col_nbr_initial_list_status = which(colnames(dataset)=="initial_list_status")
+  dataset[,col_nbr_initial_list_status] = replace(column = dataset[,col_nbr_initial_list_status], replace_what = "f", replace_with = "0")
+  dataset[,col_nbr_initial_list_status] = replace(column = dataset[,col_nbr_initial_list_status], replace_what = "w", replace_with = "1")
+  
   
   #returning the dataset
   return (dataset)
 }
-train_dataset$emp_length<-replace(column = train_dataset$term, replace_what = "+ ", replace_with = "10")
+
 train_2<-dataclean(train_dataset)
 
 View(train_2[1:10,])
-unique(train_dataset$verification_status)
+
+# Remove columns that are not required
+
+colnames(train_2)
+stay_dataset <- function(dataset){
+  rem_cols<- c("member_id" ,"batch_enrolled" , "emp_title", "desc", "title", "addr_state", "mths_since_last_delinq", 
+             "mths_since_last_record"  , "mths_since_last_major_derog", "verification_status_joint" )
+  stay_cols <- setdiff(colnames(dataset) , rem_cols)
+  dataset2 <- dataset[,stay_cols]
+  
+  factor_cols <- c("grade", "sub_grade", "home_ownership", "verification_status", "pymnt_plan",
+                   "purpose", "initial_list_status", "application_type", "loan_status")
+  numeric_cols <- setdiff(stay_cols, factor_cols)
+  
+  factor_dataset <- data.frame(sapply(dataset2[,factor_cols],as.factor))
+  numeric_dataset <- data.frame(sapply(dataset2[,numeric_cols],as.numeric))
+  dataset2 <- data.frame((cbind(numeric_dataset,factor_dataset)))
+  
+  return (dataset2)
+}
+train_stay_cols <- stay_dataset(train_2)
+colnames(train_stay_cols)
+str(train_stay_cols)

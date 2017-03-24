@@ -1,0 +1,11 @@
+#1 home ownership codes
+NONE = 0
+OTHER = 1
+OWN = 2
+ANY = 3
+MORTGAGE = 4
+RENT = 5
+
+#2 Applicaiton type 
+INDIVIDUAL = 1
+JOINT = 2
